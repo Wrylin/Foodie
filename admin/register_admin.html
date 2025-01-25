@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Register Admin</title>
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+   <link rel="stylesheet" href="../css/admin_style.css">
+   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+
+<div id="admin-header"></div>
+
+<section class="form-container">
+   <form id="register-form">
+      <h3>Register New</h3>
+      <input type="text" id="name" maxlength="20" required placeholder="enter your username" class="box" oninput="this.value = this.value.replace(/\s/g, '')">
+      <input type="password" id="pass" maxlength="20" required placeholder="enter your password" class="box" oninput="this.value = this.value.replace(/\s/g, '')">
+      <input type="password" id="cpass" maxlength="20" required placeholder="confirm your password" class="box" oninput="this.value = this.value.replace(/\s/g, '')">
+      <input type="submit" value="Register Now" class="btn">
+   </form>
+</section>
+
+<script src="../js/admin_script.js"></script>
+<script>
+$(document).ready(function() {
+    $("#admin-header").load("../components/admin_header.html");
+
+    $('#register-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        var formData = {
+            action: 'register',
+            name: $('#name').val(),
+            pass: $('#pass').val(),
+            cpass: $('#cpass').val()
+        };
+
+        $.ajax({
+            url: 'admin_auth.php',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(formData),
+            dataType: 'json',
+            success: function(response) {
+                if(response.success) {
+                    alert(response.message);
+                    window.location.href = 'admin_accounts.html';
+                } else {
+                    alert(response.message || 'An error occurred');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("Error:", error);
+                console.log("Response:", xhr.responseText);
+                alert('An error occurred. Please try again.');
+            }
+        });
+    });
+});
+</script>
+
+</body>
+</html>
+

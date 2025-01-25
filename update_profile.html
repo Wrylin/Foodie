@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Update Profile</title>
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+   <link rel="stylesheet" href="css/style.css">
+   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+   
+<div id="header"></div>
+
+<section class="form-container update-form">
+   <form id="updateForm">
+      <h3>Update Profile</h3>
+      <input type="text" id="name" placeholder="Enter your name" class="box" maxlength="50">
+      <input type="email" id="email" placeholder="Enter your email" class="box" maxlength="50" oninput="this.value = this.value.replace(/\s/g, '')">
+      <input type="number" id="number" placeholder="Enter your number" class="box" min="0" max="9999999999" maxlength="10">
+      <input type="password" id="old_pass" placeholder="Enter your old password" class="box" maxlength="50" oninput="this.value = this.value.replace(/\s/g, '')">
+      <input type="password" id="new_pass" placeholder="Enter your new password" class="box" maxlength="50" oninput="this.value = this.value.replace(/\s/g, '')">
+      <input type="password" id="confirm_pass" placeholder="Confirm your new password" class="box" maxlength="50" oninput="this.value = this.value.replace(/\s/g, '')">
+      <input type="submit" value="Update Now" class="btn">
+   </form>
+</section>
+
+<div id="footer"></div>
+
+<script src="js/script.js"></script>
+<script>
+$(document).ready(function() {
+    // Load header and footer
+    $("#header").load("components/user_header.html");
+    $("#footer").load("components/footer.html");
+
+    // Fetch user data
+    $.ajax({
+        url: 'update_profile.php',
+        type: 'GET',
+        dataType: 'json',
+        success: function(data) {
+            $('#name').attr('placeholder', data.name);
+            $('#email').attr('placeholder', data.email);
+            $('#number').attr('placeholder', data.number);
+        },
+        error: function(xhr, status, error) {
+            console.error("Error fetching user data:", error);
+        }
+    });
+
+    // Handle form submission
+    $('#updateForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        var formData = {
+            name: $('#name').val(),
+            email: $('#email').val(),
+            number: $('#number').val(),
+            old_pass: $('#old_pass').val(),
+            new_pass: $('#new_pass').val(),
+            confirm_pass: $('#confirm_pass').val()
+        };
+
+        $.ajax({
+            url: 'update_profile.php',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(formData),
+            dataType: 'json',
+            success: function(response) {
+                if(response.success) {
+                    alert(response.message);
+                    location.reload();
+                } else {
+                    alert(response.message || 'An error occurred');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("Error updating profile:", error);
+                alert('An error occurred while updating your profile');
+            }
+        });
+    });
+});
+</script>
+
+</body>
+</html>
+

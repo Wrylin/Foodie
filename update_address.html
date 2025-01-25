@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Update Address</title>
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+   <link rel="stylesheet" href="css/style.css">
+   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+   
+<div id="user-header"></div>
+
+<section class="form-container">
+   <form id="address-form">
+      <h3>Your Address</h3>
+      <input type="text" class="box" placeholder="Unit no." required maxlength="50" name="unit" id="unit">
+      <input type="text" class="box" placeholder="Street" required maxlength="50" name="street" id="street">
+      <input type="text" class="box" placeholder="Subdivision" required maxlength="50" name="subdiv" id="subdiv">
+      <input type="text" class="box" placeholder="City" required maxlength="50" name="city" id="city">
+      <input type="text" class="box" placeholder="Province" required maxlength="50" name="prov" id="prov">
+      <input type="number" class="box" placeholder="Pin code" required max="999999" min="0" maxlength="6" name="pin_code" id="pin_code">
+      <input type="submit" value="Save Address" class="btn">
+   </form>
+</section>
+
+<div id="footer"></div>
+
+<script src="js/script.js"></script>
+<script>
+$(document).ready(function() {
+    // Load header and footer
+    $("#user-header").load("components/user_header.html");
+    $("#footer").load("components/footer.html");
+
+    // Fetch current address
+    $.ajax({
+        url: 'update_address.php',
+        type: 'GET',
+        dataType: 'json',
+        success: function(data) {
+            if(data.address) {
+                var addressParts = data.address.split(', ');
+                $('#unit').val(addressParts[0]);
+                $('#street').val(addressParts[1]);
+                $('#subdiv').val(addressParts[2]);
+                $('#city').val(addressParts[3]);
+                $('#pin_code').val(addressParts[4]);
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error("Error fetching address:", error);
+        }
+    });
+
+    // Handle form submission
+    $('#address-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        var formData = {
+            unit: $('#unit').val(),
+            street: $('#street').val(),
+            subdivision: $('#subdivision').val(),
+            city: $('#city').val(),
+            province: $('#province').val(),
+            pin_code: $('#pin_code').val()
+        };
+
+        $.ajax({
+            url: 'update_adress.php',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(formData),
+            dataType: 'json',
+            success: function(response) {
+                if(response.success) {
+                    alert(response.message);
+                } else {
+                    alert(response.error || 'An error occurred');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("Error updating address:", error);
+                alert('An error occurred while updating your address');
+            }
+        });
+    });
+});
+</script>
+
+</body>
+</html>
+

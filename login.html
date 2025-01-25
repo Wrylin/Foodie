@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>login</title>
+
+    <!-- font awesome cdn link  -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+
+    <!-- custom css file link  -->
+    <link rel="stylesheet" href="css/style.css">
+
+</head>
+
+<body>
+
+    <!-- header section starts -->
+    <div id="header"></div>
+    <!-- header section ends -->
+
+    <section class="form-container">
+
+        <form id="loginForm">
+            <h3>login now</h3>
+            <input type="email" name="email" required placeholder="enter your email" class="box" maxlength="50"
+                oninput="this.value = this.value.replace(/\s/g, '')">
+            <input type="password" name="pass" required placeholder="enter your password" class="box" maxlength="50"
+                oninput="this.value = this.value.replace(/\s/g, '')">
+            <input type="hidden" name="action" value="login">
+            <input type="submit" value="login now" class="btn">
+            <p>don't have an account? <a href="register.html">register now</a></p>
+        </form>
+
+    </section>
+
+    <div id="footer"></div>
+
+    <!-- custom js file link  -->
+    <script></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load header
+            fetch('components/user_header.html')
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('header').innerHTML = data;
+                })
+                .catch(error => {
+                    console.error('Error loading header:', error);
+                    document.getElementById('header').innerHTML = '<p>Error loading header</p>';
+                });
+
+            // Load footer
+            fetch('components/footer.html')
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('footer').innerHTML = data;
+                })
+                .catch(error => {
+                    console.error('Error loading footer:', error);
+                    document.getElementById('footer').innerHTML = '<p>Error loading footer</p>';
+                });
+
+            // Handle form submission
+            document.getElementById('loginForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+
+                fetch('auth.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.text();
+                })
+                .then(text => {
+                    try {
+                        return JSON.parse(text);
+                    } catch (e) {
+                        throw new Error('Invalid JSON: ' + text);
+                    }
+                })
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        window.location.href = 'home.html';
+                    } else {
+                        alert(data.message || 'Login failed. Please check your credentials and try again.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred during login. Please try again later.');
+                });
+            });
+        });
+    </script>
+
+</body>
+
+</html>
+

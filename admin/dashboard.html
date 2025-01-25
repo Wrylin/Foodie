@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Dashboard</title>
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+   <link rel="stylesheet" href="../css/admin_style.css">
+   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+
+<div id="admin-header"></div>
+
+<section class="dashboard">
+   <h1 class="heading">Dashboard</h1>
+   <div class="box-container">
+      <div class="box">
+         <h3>Welcome!</h3>
+         <p id="admin-name"></p>
+         <a href="update_profile.html" class="btn">Update Profile</a>
+      </div>
+      <div class="box">
+         <h3><span>$</span><span id="total-pendings">0</span><span>/-</span></h3>
+         <p>Total Pendings</p>
+         <a href="placed_orders.html" class="btn">See Orders</a>
+      </div>
+      <div class="box">
+         <h3><span>$</span><span id="total-completes">0</span><span>/-</span></h3>
+         <p>Total Completes</p>
+         <a href="placed_orders.html" class="btn">See Orders</a>
+      </div>
+      <div class="box">
+         <h3 id="numbers-of-orders">0</h3>
+         <p>Total Orders</p>
+         <a href="placed_orders.html" class="btn">See Orders</a>
+      </div>
+      <div class="box">
+         <h3 id="numbers-of-items">0</h3>
+         <p>Items Added</p>
+         <a href="items.html" class="btn">See Items</a>
+      </div>
+      <div class="box">
+         <h3 id="numbers-of-users">0</h3>
+         <p>User Accounts</p>
+         <a href="users_accounts.html" class="btn">See Users</a>
+      </div>
+      <div class="box">
+         <h3 id="numbers-of-admins">0</h3>
+         <p>Admins</p>
+         <a href="admin_accounts.html" class="btn">See Admins</a>
+      </div>
+   </div>
+</section>
+
+<script src="../js/admin_script.js"></script>
+<script>
+$(document).ready(function() {
+    $("#admin-header").load("../components/admin_header.html");
+
+    $.ajax({
+        url: 'dashboard.php',
+        type: 'GET',
+        dataType: 'json',
+        success: function(data) {
+            if(data.error) {
+                alert(data.error);
+                window.location.href = 'admin_login.html';
+            } else {
+                $('#admin-name').text(data.admin_name);
+                $('#total-pendings').text(data.total_pendings);
+                $('#total-completes').text(data.total_completes);
+                $('#numbers-of-orders').text(data.numbers_of_orders);
+                $('#numbers-of-items').text(data.numbers_of_items);
+                $('#numbers-of-users').text(data.numbers_of_users);
+                $('#numbers-of-admins').text(data.numbers_of_admins);
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error("Error fetching dashboard data:", error);
+            alert('An error occurred while loading the dashboard');
+        }
+    });
+});
+</script>
+
+</body>
+</html>
+

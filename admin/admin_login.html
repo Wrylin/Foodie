@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Login</title>
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+   <link rel="stylesheet" href="../css/admin_style.css">
+   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+
+<div id="message-container"></div>
+
+<section class="form-container">
+   <form id="login-form">
+      <h3>Login Now</h3>
+      <p>default username = <span>admin</span> & password = <span>111</span></p>
+      <input type="text" id="name" maxlength="20" required placeholder="enter your username" class="box" oninput="this.value = this.value.replace(/\s/g, '')">
+      <input type="password" id="pass" maxlength="20" required placeholder="enter your password" class="box" oninput="this.value = this.value.replace(/\s/g, '')">
+      <input type="submit" value="Login Now" class="btn">
+   </form>
+</section>
+
+<script>
+$(document).ready(function() {
+    $('#login-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        var formData = {
+            action: 'login',
+            name: $('#name').val(),
+            pass: $('#pass').val()
+        };
+
+        $.ajax({
+            url: 'admin_auth.php',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(formData),
+            dataType: 'json',
+            success: function(response) {
+                if(response.success) {
+                    window.location.href = 'dashboard.html';
+                } else {
+                    showMessage(response.message);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("Error:", error);
+                console.log("Response:", xhr.responseText);
+                showMessage('An error occurred. Please try again.');
+            }
+        });
+    });
+
+    function showMessage(message) {
+        var messageHtml = '<div class="message"><span>' + message + '</span><i class="fas fa-times" onclick="this.parentElement.remove();"></i></div>';
+        $('#message-container').html(messageHtml);
+    }
+});
+</script>
+
+</body>
+</html>
+

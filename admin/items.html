@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Items</title>
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+   <link rel="stylesheet" href="../css/admin_style.css">
+   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+
+<div id="admin-header"></div>
+<div id="message-container"></div>
+
+<section class="add-items">
+   <form id="add-item-form" enctype="multipart/form-data">
+      <h3>Add Item</h3>
+      <input type="text" required placeholder="enter item name" name="name" maxlength="100" class="box">
+      <input type="number" min="0" max="9999999999" required placeholder="enter item price" name="price" onkeypress="if(this.value.length == 10) return false;" class="box">
+      <select name="category" class="box" required>
+         <option value="" disabled selected>select category --</option>
+         <option value="main dish">main dish</option>
+         <option value="fast food">fast food</option>
+         <option value="drinks">drinks</option>
+         <option value="desserts">desserts</option>
+      </select>
+      <input type="file" name="image" class="box" accept="image/jpg, image/jpeg, image/png, image/webp" required>
+      <input type="submit" value="Add Item" class="btn">
+   </form>
+</section>
+
+<section class="show-items" style="padding-top: 0;">
+   <div class="box-container" id="items-container"></div>
+</section>
+
+<script src="../js/admin_script.js"></script>
+<script>
+$(document).ready(function() {
+    function showMessage(message, isError = false) {
+        var messageHtml = `
+            <div class="message ${isError ? 'error' : 'success'}">
+                <span>${message}</span>
+                <i class="fas fa-times" onclick="this.parentElement.remove();"></i>
+            </div>
+        `;
+        $('#message-container').html(messageHtml);
+        
+        // Auto-remove message after 5 seconds
+        setTimeout(function() {
+            $('#message-container .message').fadeOut();
+        }, 5000);
+    }
+
+    function handleAjaxError(xhr, status, error) {
+        console.error("AJAX Error:", {
+            status: status,
+            error: error,
+            response: xhr.responseText
+        });
+        
+        showMessage(xhr.responseText || 'An unexpected error occurred. Please try again.', true);
+    }
+
+    $("#admin-header").load("../components/admin_header.html");
+
+    loadItems();
+
+    $('#add-item-form').on('submit', function(e) {
+        e.preventDefault();
+        var formData = new FormData(this);
+        formData.append('action', 'add_item');
+
+        $.ajax({
+            url: 'items.php',
+            type: 'POST',
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function(response) {
+                if(response.startsWith('Success:')) {
+                    showMessage(response);
+                    $('#add-item-form')[0].reset();
+                    loadItems();
+                } else {
+                    showMessage(response, true);
+                }
+            },
+            error: handleAjaxError
+        });
+    });
+
+    function loadItems() {
+        $.ajax({
+            url: 'items.php',
+            type: 'GET',
+            data: { action: 'get_items' },
+            success: function(response) {
+                var container = $('#items-container');
+                container.empty();
+
+                if(response === 'No items found') {
+                    container.html('<p class="empty">no items added yet!</p>');
+                } else {
+                    var items = response.split('\n');
+                    items.forEach(function(item) {
+                        if(item.trim() !== '') {
+                            var itemData = item.split(', ');
+                            var id = itemData[0].split(': ')[1];
+                            var name = itemData[1].split(': ')[1];
+                            var category = itemData[2].split(': ')[1];
+                            var price = itemData[3].split(': ')[1];
+                            var image = itemData[4].split(': ')[1];
+
+                            var itemHtml = `
+                                <div class="box">
+                                    <img src="../uploaded_img/${image}" alt="">
+                                    <div class="flex">
+                                        <div class="price"><span>$</span>${price}<span>/-</span></div>
+                                        <div class="category">${category}</div>
+                                    </div>
+                                    <div class="name">${name}</div>
+                                    <div class="flex-btn">
+                                        <a href="update_item.html?update=${id}" class="option-btn">update</a>
+                                        <button class="delete-btn" data-id="${id}">delete</button>
+                                    </div>
+                                </div>
+                            `;
+                            container.append(itemHtml);
+                        }
+                    });
+                }
+            },
+            error: handleAjaxError
+        });
+    }
+
+    $(document).on('click', '.delete-btn', function() {
+        if(confirm('Delete this item?')) {
+            var itemId = $(this).data('id');
+            $.ajax({
+                url: 'items.php',
+                type: 'GET',
+                data: { action: 'delete_item', delete: itemId },
+                success: function(response) {
+                    if(response.startsWith('Success:')) {
+                        showMessage(response);
+                        loadItems();
+                    } else {
+                        showMessage(response, true);
+                    }
+                },
+                error: handleAjaxError
+            });
+        }
+    });
+});
+</script>
+
+</body>
+</html>
+

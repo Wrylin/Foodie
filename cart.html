@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>cart</title>
+
+   <!-- font awesome cdn link  -->
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+
+   <!-- custom css file link  -->
+   <link rel="stylesheet" href="css/style.css">
+
+   <!-- jQuery CDN -->
+   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+   
+<!-- header section starts -->
+<div id="header"></div>
+<!-- header section ends -->
+
+<div class="heading">
+   <h3>shopping cart</h3>
+   <p><a href="home.html">home</a> <span> / cart</span></p>
+</div>
+
+<!-- shopping cart section starts  -->
+
+<section class="products">
+
+   <h1 class="title">your cart</h1>
+
+   <div class="box-container" id="cart-items">
+      <!-- Cart items will be dynamically inserted here -->
+   </div>
+
+   <div class="cart-total">
+      <p>cart total : <span id="grand-total">$0</span></p>
+      <a href="checkout.html" class="btn" id="checkout-btn">proceed to checkout</a>
+   </div>
+
+   <div class="more-btn">
+      <button class="delete-btn" id="delete-all-btn">delete all</button>
+      <a href="menu.html" class="btn">continue shopping</a>
+   </div>
+
+</section>
+
+<!-- shopping cart section ends -->
+
+<!-- footer section starts -->
+<div id="footer"></div>
+<!-- footer section ends -->
+
+<!-- custom js file link  -->
+<script src="js/script.js"></script>
+
+<script>
+$(document).ready(function() {
+    // Load header and footer
+    $("#header").load("components/user_header.html");
+    $("#footer").load("components/footer.html");
+
+    // Function to load cart items
+    function loadCartItems() {
+        $.get('cart-api.php', function(data) {
+            let cartItems = JSON.parse(data);
+            let html = '';
+            let grandTotal = 0;
+
+            if(cartItems.length > 0) {
+                cartItems.forEach(function(item) {
+                    let subTotal = item.price * item.quantity;
+                    grandTotal += subTotal;
+
+                    html += `
+                    <form action="" method="post" class="box">
+                        <input type="hidden" name="cart_id" value="${item.id}">
+                        <a href="quick_view.html?pid=${item.pid}" class="fas fa-eye"></a>
+                        <button type="button" class="fas fa-times delete-item" data-id="${item.id}"></button>
+                        <img src="uploaded_img/${item.image}" alt="">
+                        <div class="name">${item.name}</div>
+                        <div class="flex">
+                            <div class="price"><span>$</span>${item.price}</div>
+                            <input type="number" name="qty" class="qty" min="1" max="99" value="${item.quantity}" maxlength="2" data-id="${item.id}">
+                            <button type="button" class="fas fa-edit update-qty" data-id="${item.id}"></button>
+                        </div>
+                        <div class="sub-total"> sub total : <span>$${subTotal}/-</span> </div>
+                    </form>
+                    `;
+                });
+            } else {
+                html = '<p class="empty">your cart is empty</p>';
+            }
+
+            $('#cart-items').html(html);
+            $('#grand-total').text('$' + grandTotal);
+            $('#checkout-btn').toggleClass('disabled', grandTotal <= 1);
+            $('#delete-all-btn').toggleClass('disabled', grandTotal <= 1);
+        });
+    }
+
+    // Load cart items on page load
+    loadCartItems();
+
+    // Delete item
+    $(document).on('click', '.delete-item', function() {
+        let cartId = $(this).data('id');
+        if(confirm('delete this item?')) {
+            $.post('cart-api.php', {action: 'delete', cart_id: cartId}, function() {
+                loadCartItems();
+            });
+        }
+    });
+
+    // Update quantity
+    $(document).on('click', '.update-qty', function() {
+        let cartId = $(this).data('id');
+        let qty = $(this).siblings('.qty').val();
+        $.post('cart-api.php', {action: 'update_qty', cart_id: cartId, qty: qty}, function() {
+            loadCartItems();
+        });
+    });
+
+    // Delete all
+    $('#delete-all-btn').click(function() {
+        if(confirm('delete all from cart?')) {
+            $.post('cart-api.php', {action: 'delete_all'}, function() {
+                loadCartItems();
+            });
+        }
+    });
+});
+</script>
+
+</body>
+</html>
+

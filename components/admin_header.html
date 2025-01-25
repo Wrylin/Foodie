@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Header</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link rel="stylesheet" href="../css/admin_style.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+
+<div id="message-container"></div>
+
+<header class="header">
+    <section class="flex">
+        <a href="dashboard.html" class="logo">Admin<span>Panel</span></a>
+
+        <nav class="navbar">
+            <a href="dashboard.html">home</a>
+            <a href="items.html">items</a>
+            <a href="placed_orders.html">orders</a>
+            <a href="admin_accounts.html">admins</a>
+            <a href="users_accounts.html">users</a>
+        </nav>
+
+        <div class="icons">
+            <div id="menu-btn" class="fas fa-bars"></div>
+            <div id="user-btn" class="fas fa-user"></div>
+        </div>
+
+        <div class="profile">
+            <p id="admin-name"></p>
+            <a href="update_profile.html" class="btn">update profile</a>
+            <div class="flex-btn">
+                <a href="admin_login.html" class="option-btn">login</a>
+                <a href="register_admin.html" class="option-btn">register</a>
+            </div>
+            <a href="../components/admin_logout.php" onclick="return confirm('logout from this website?');" class="delete-btn">logout</a>
+        </div>
+    </section>
+</header>
+
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: 'admin_header.php',
+        type: 'GET',
+        dataType: 'json',
+        success: function(response) {
+            if(response.error) {
+                showMessage(response.error);
+            } else {
+                $('#admin-name').text(response.admin_name);
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error("AJAX Error: ", status, error);
+            showMessage("An error occurred while fetching admin data.");
+        }
+    });
+
+    function showMessage(message) {
+        var messageHtml = '<div class="message"><span>' + message + '</span><i class="fas fa-times" onclick="this.parentElement.remove();"></i></div>';
+        $('#message-container').html(messageHtml);
+    }
+
+    // Toggle menu
+    $('#menu-btn').click(function() {
+        $('.navbar').toggleClass('active');
+    });
+
+    // Toggle user profile
+    $('#user-btn').click(function() {
+        $('.profile').toggleClass('active');
+    });
+});
+</script>
+
+</body>
+</html>
+

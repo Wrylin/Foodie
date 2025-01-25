@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FoodiePlus</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+
+<div id="message-container"></div>
+
+<header class="header">
+    <section class="flex">
+        <a href="home.html" class="logo">FoodiePlus</a>
+        <nav class="navbar">
+            <a href="home.html">home</a>
+            <a href="about.html">about</a>
+            <a href="menu.html">menu</a>
+            <a href="orders.html">orders</a>
+            <a href="contact.html">contact</a>
+        </nav>
+        <div class="icons">
+            <a href="search.html"><i class="fas fa-search"></i></a>
+            <a href="cart.html"><i class="fas fa-shopping-cart"></i><span id="cart-items-count"></span></a>
+            <div id="user-btn" class="fas fa-user"></div>
+            <div id="menu-btn" class="fas fa-bars"></div>
+        </div>
+
+        <div class="profile">
+            <p class="name" id="user-name"></p>
+            <div class="flex">
+                <a href="profile.html" class="btn">profile</a>
+                <a href="components/user_logout.php" onclick="return confirm('logout from this website?');" class="delete-btn">logout</a>
+            </div>
+            <p class="account">
+                <a href="login.html">login</a> or
+                <a href="register.html">register</a>
+            </p> 
+        </div>
+    </section>
+</header>
+
+<script src="js/script.js"></script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: 'user_header.php',
+        type: 'GET',
+        dataType: 'json',
+        success: function(data) {
+            $('#cart-items-count').text('(' + data.total_cart_items + ')');
+            
+            if (data.user_name) {
+                $('#user-name').text(data.user_name);
+                $('.profile .flex').show();
+                $('.profile .account').hide();
+            } else {
+                $('#user-name').text('please login first!');
+                $('.profile .flex').hide();
+                $('.profile .account').show();
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error("AJAX Error: " + status + " - " + error);
+        }
+    });
+
+    // Handle messages (if needed)
+    function showMessage(message) {
+        var messageHtml = '<div class="message"><span>' + message + '</span><i class="fas fa-times" onclick="this.parentElement.remove();"></i></div>';
+        $('#message-container').append(messageHtml);
+    }
+});
+</script>
+
+</body>
+</html>
+
