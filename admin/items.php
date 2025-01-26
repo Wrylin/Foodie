@@ -9,7 +9,7 @@ error_reporting(E_ALL);
 // Start output buffering
 ob_start();
 
-require_once '../components/connect.php';
+include '../components/connect.php';
 
 session_start();
 

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Update Item</title>
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+   <link rel="stylesheet" href="../css/admin_style.css">
+   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+
+<div id="admin-header"></div>
+
+<section class="update-item">
+   <h1 class="heading">Update Item</h1>
+   <div id="message-container"></div>
+   <form id="update-form" enctype="multipart/form-data">
+      <input type="hidden" id="pid" name="pid">
+      <input type="hidden" id="old_image" name="old_image">
+      <img id="item-image" src="/placeholder.svg" alt="">
+      <span>Update Name</span>
+      <input type="text" required placeholder="Enter item name" id="name" name="name" maxlength="100" class="box">
+      <span>Update Price</span>
+      <input type="number" min="0" max="9999999999" required placeholder="Enter item price" id="price" name="price" onkeypress="if(this.value.length == 10) return false;" class="box">
+      <span>Update Category</span>
+      <select id="category" name="category" class="box" required>
+         <option value="main dish">Main Dish</option>
+         <option value="fast food">Fast Food</option>
+         <option value="drinks">Drinks</option>
+         <option value="desserts">Desserts</option>
+      </select>
+      <span>Update Image</span>
+      <input type="file" name="image" id="image" class="box" accept="image/jpg, image/jpeg, image/png, image/webp">
+      <div class="flex-btn">
+         <input type="submit" value="Update" class="btn" name="update">
+         <a href="items.html" class="option-btn">Go Back</a>
+      </div>
+   </form>
+</section>
+
+<script src="../js/admin_script.js"></script>
+<script>
+$(document).ready(function() {
+    $("#admin-header").load("../components/admin_header.html");
+
+    function showMessage(message, isError = false) {
+        var messageHtml = `
+            <div class="message ${isError ? 'error' : 'success'}">
+                <span>${message}</span>
+                <i class="fas fa-times" onclick="this.parentElement.remove();"></i>
+            </div>
+        `;
+        $('#message-container').html(messageHtml);
+        
+        // Auto-remove message after 5 seconds
+        setTimeout(function() {
+            $('#message-container .message').fadeOut();
+        }, 5000);
+    }
+
+    // Get item ID from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const itemId = urlParams.get('update');
+
+    if (itemId) {
+        // Fetch item details
+        $.ajax({
+            url: 'update_item.php',
+            type: 'GET',
+            data: { update: itemId },
+            success: function(response) {
+                const lines = response.split('\n');
+                const item = {};
+                lines.forEach(line => {
+                    const [key, value] = line.split(': ');
+                    item[key] = value;
+                });
+
+                $('#pid').val(item['ID']);
+                $('#name').val(item['Name']);
+                $('#price').val(item['Price']);
+                $('#category').val(item['Category']);
+                $('#old_image').val(item['Image']);
+                $('#item-image').attr('src', '../uploaded_img/' + item['Image']);
+            },
+            error: function() {
+                showMessage('Failed to fetch item details', true);
+            }
+        });
+    }
+
+    // Handle form submission
+    $('#update-form').on('submit', function(e) {
+        e.preventDefault();
+        var formData = new FormData(this);
+
+        $.ajax({
+            url: 'update_item.php',
+            type: 'POST',
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function(response) {
+                if (response.startsWith('Success')) {
+                    showMessage(response);
+                    setTimeout(function() {
+                        window.location.href = 'items.html';
+                    }, 2000);
+                }else {
+                    showMessage(response, true);
+                }
+            },
+            error: function(xhr, status, error) {
+                showMessage('An error occurred while updating the item: ' + xhr.responseText, true);
+            }
+        });
+    });
+});
+</script>
+
+</body>
+</html>
+
