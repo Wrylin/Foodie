@@ -7,11 +7,10 @@
    <title>Update Address</title>
    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
    <link rel="stylesheet" href="css/style.css">
-   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
    
-<div id="user-header"></div>
+<div id="header"></div>
 
 <section class="form-container">
    <form id="address-form">
@@ -30,66 +29,74 @@
 
 <script src="js/script.js"></script>
 <script>
-$(document).ready(function() {
     // Load header and footer
-    $("#user-header").load("components/user_header.html");
-    $("#footer").load("components/footer.html");
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch('components/user_header.html')
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('header').innerHTML = data;
+            });
 
-    // Fetch current address
-    $.ajax({
-        url: 'update_address.php',
-        type: 'GET',
-        dataType: 'json',
-        success: function(data) {
-            if(data.address) {
-                var addressParts = data.address.split(', ');
-                $('#unit').val(addressParts[0]);
-                $('#street').val(addressParts[1]);
-                $('#subdiv').val(addressParts[2]);
-                $('#city').val(addressParts[3]);
-                $('#pin_code').val(addressParts[4]);
-            }
-        },
-        error: function(xhr, status, error) {
-            console.error("Error fetching address:", error);
-        }
+        fetch('components/footer.html')
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('footer').innerHTML = data;
+            });
+
+        // Fetch current address
+        fetch('update_address.php')
+            .then(response => response.json())
+            .then(data => {
+                if(data.success && data.address) {
+                    const addressParts = data.address.split(', ');
+                    document.getElementById('unit').value = addressParts[0] || '';
+                    document.getElementById('street').value = addressParts[1] || '';
+                    document.getElementById('subdiv').value = addressParts[2] || '';
+                    document.getElementById('city').value = addressParts[3] || '';
+                    document.getElementById('prov').value = addressParts[4] || '';
+                    document.getElementById('pin_code').value = addressParts[5] || '';
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching address:', error);
+            });
     });
 
     // Handle form submission
-    $('#address-form').on('submit', function(e) {
+    document.getElementById('address-form').addEventListener('submit', function(e) {
         e.preventDefault();
         
-        var formData = {
-            unit: $('#unit').val(),
-            street: $('#street').val(),
-            subdivision: $('#subdivision').val(),
-            city: $('#city').val(),
-            province: $('#province').val(),
-            pin_code: $('#pin_code').val()
+        const formData = {
+            unit: document.getElementById('unit').value,
+            street: document.getElementById('street').value,
+            subdiv: document.getElementById('subdiv').value,
+            city: document.getElementById('city').value,
+            prov: document.getElementById('prov').value,
+            pin_code: document.getElementById('pin_code').value
         };
 
-        $.ajax({
-            url: 'update_adress.php',
-            type: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify(formData),
-            dataType: 'json',
-            success: function(response) {
-                if(response.success) {
-                    alert(response.message);
-                } else {
-                    alert(response.error || 'An error occurred');
-                }
+        fetch('update_address.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
             },
-            error: function(xhr, status, error) {
-                console.error("Error updating address:", error);
-                alert('An error occurred while updating your address');
+            body: JSON.stringify(formData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.success) {
+                alert(data.message);
+                window.location.href = 'profile.html';
+            } else {
+                alert(data.error || 'An error occurred');
             }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while updating your address');
         });
     });
-});
 </script>
 
 </body>
 </html>
-

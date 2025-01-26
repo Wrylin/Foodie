@@ -1,10 +1,7 @@
 <?php
-session_start();
+include 'components/connect.php';
 
-// Connect to SQL Server database
-$serverName = "your_server_name";
-$connectionInfo = array("Database"=>"food website", "UID"=>"your_username", "PWD"=>"your_password");
-$conn = sqlsrv_connect($serverName, $connectionInfo);
+session_start();
 
 if(!$conn) {
     die(json_encode(['error' => 'Connection failed: ' . print_r(sqlsrv_errors(), true)]));
@@ -20,9 +17,18 @@ if(isset($_SESSION['user_id'])){
 if($_SERVER['REQUEST_METHOD'] === 'POST'){
     $data = json_decode(file_get_contents('php://input'), true);
 
-    $address = $data['unit'].', '.$data['street'].', '.$data['subdiv'] .', '. $data['city'] .', '. $data['pin_code'];
-    $address = filter_var($address, FILTER_SANITIZE_STRING);
+    // Validate all required fields are present
+    $required_fields = ['unit', 'street', 'subdiv', 'city', 'prov', 'pin_code'];
+    foreach($required_fields as $field) {
+        if(!isset($data[$field]) || empty($data[$field])) {
+            echo json_encode(['error' => 'All fields are required']);
+            exit;
+        }
+    }
 
+    $address = $data['unit'].', '.$data['street'].', '.$data['subdiv'] .', '. 
+               $data['city'] .', '. $data['prov'] .', '. $data['pin_code'];
+    
     $sql = "UPDATE users SET address = ? WHERE id = ?";
     $params = array($address, $user_id);
     $stmt = sqlsrv_query($conn, $sql, $params);
@@ -30,7 +36,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
     if($stmt === false) {
         echo json_encode(['error' => 'Error updating address: ' . print_r(sqlsrv_errors(), true)]);
     } else {
-        echo json_encode(['success' => true, 'message' => 'Address saved!']);
+        echo json_encode(['success' => true, 'message' => 'Address updated successfully!']);
     }
     exit;
 }
@@ -44,6 +50,6 @@ if($stmt === false) {
     echo json_encode(['error' => 'Error fetching address: ' . print_r(sqlsrv_errors(), true)]);
 } else {
     $row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC);
-    echo json_encode(['address' => $row['address']]);
+    echo json_encode(['success' => true, 'address' => $row['address']]);
 }
-
+?>

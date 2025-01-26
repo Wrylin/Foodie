@@ -1,19 +1,3 @@
-<!-- <?php
-
-include 'components/connect.php';
-
-session_start();
-
-if(isset($_SESSION['user_id'])){
-   $user_id = $_SESSION['user_id'];
-}else{
-   $user_id = '';
-};
-
-include 'components/add_cart.php';
-
-?> -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -31,74 +15,114 @@ include 'components/add_cart.php';
 </head>
 <body>
    
-<!-- <?php include 'components/user_header.php'; ?> -->
+<div id="header"></div>
 
-<section class="products">
+<section class="items">
 
    <h1 class="title">food category</h1>
 
-   <div class="box-container">
-
-      <!-- <?php
-         $category = $_GET['category'];
-         $select_products = $conn->prepare("SELECT * FROM `products` WHERE category = ?");
-         $select_products->execute([$category]);
-         if($select_products->rowCount() > 0){
-            while($fetch_products = $select_products->fetch(PDO::FETCH_ASSOC)){
-      ?> -->
-      <form action="" method="post" class="box">
-         <input type="hidden" name="pid" value="<?= $fetch_products['id']; ?>">
-         <input type="hidden" name="name" value="<?= $fetch_products['name']; ?>">
-         <input type="hidden" name="price" value="<?= $fetch_products['price']; ?>">
-         <input type="hidden" name="image" value="<?= $fetch_products['image']; ?>">
-         <a href="quick_view.php?pid=<?= $fetch_products['id']; ?>" class="fas fa-eye"></a>
-         <button type="submit" class="fas fa-shopping-cart" name="add_to_cart"></button>
-         <img src="uploaded_img/<?= $fetch_products['image']; ?>" alt="">
-         <div class="name">
-            <!-- <?= $fetch_products['name']; ?> -->
-        </div>
-         <div class="flex">
-            <div class="price"><span>$</span>
-                <!-- <?= $fetch_products['price']; ?> -->
-            </div>
-            <input type="number" name="qty" class="qty" min="1" max="99" value="1" maxlength="2">
-         </div>
-      </form>
-      <!-- <?php
-            }
-         }else{
-            echo '<p class="empty">no products added yet!</p>';
-         }
-      ?> -->
-
+   <div class="box-container" id="items-container">
+      <!-- Items will be dynamically inserted here -->
    </div>
 
 </section>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<!-- <?php include 'components/footer.php'; ?> -->
-
+<div id="footer"></div>
 
 <script src="https://unpkg.com/swiper@8/swiper-bundle.min.js"></script>
 
 <!-- custom js file link  -->
 <script src="js/script.js"></script>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Load header
+    fetch('components/user_header.html')
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById('header').innerHTML = data;
+        })
+        .catch(error => console.error('Error loading header:', error));
+
+    // Load footer
+    fetch('components/footer.html')
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById('footer').innerHTML = data;
+        })
+        .catch(error => console.error('Error loading footer:', error));
+
+    // Get category from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const category = urlParams.get('category');
+
+    if (category) {
+        // Fetch items for the category
+        fetch(`category_data.php?category=${encodeURIComponent(category)}`)
+            .then(response => response.json())
+            .then(data => {
+                const container = document.getElementById('items-container');
+                if (data.error) {
+                    container.innerHTML = `<p class="empty">${data.error}</p>`;
+                } else if (data.length > 0) {
+                    data.forEach(item => {
+                        container.innerHTML += `
+                            <form action="" method="post" class="box">
+                                <input type="hidden" name="pid" value="${item.id}">
+                                <input type="hidden" name="name" value="${item.name}">
+                                <input type="hidden" name="price" value="${item.price}">
+                                <input type="hidden" name="image" value="${item.image}">
+                                <a href="quick_view.html?pid=${item.id}" class="fas fa-eye"></a>
+                                <button type="submit" class="fas fa-shopping-cart" name="add_to_cart"></button>
+                                <img src="uploaded_img/${item.image}" alt="">
+                                <div class="name">${item.name}</div>
+                                <div class="flex">
+                                    <div class="price"><span>$</span>${item.price}</div>
+                                    <input type="number" name="qty" class="qty" min="1" max="99" value="1" maxlength="2">
+                                </div>
+                            </form>
+                        `;
+                    });
+                } else {
+                    container.innerHTML = '<p class="empty">no items added yet!</p>';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('items-container').innerHTML = '<p class="empty">Error loading items</p>';
+            });
+    } else {
+        document.getElementById('items-container').innerHTML = '<p class="empty">No category specified</p>';
+    }
+
+    // Handle add to cart
+    document.getElementById('items-container').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const form = e.target;
+        if (form.classList.contains('box')) {
+            const formData = new FormData(form);
+            fetch('components/add_cart.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    $("#user-header").load("components/user_header.html");
+                } else {
+                    alert(data.message || 'Error adding item to cart');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error adding item to cart');
+            });
+        }
+    });
+});
+</script>
 
 </body>
 </html>
+

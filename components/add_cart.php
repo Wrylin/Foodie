@@ -1,36 +1,54 @@
 <?php
+include 'connect.php';
 
-if(isset($_POST['add_to_cart'])){
+session_start();
 
-   if($user_id == ''){
-      header('location:login.html');
-   }else{
-
-      $pid = $_POST['pid'];
-      $pid = filter_var($pid, FILTER_SANITIZE_STRING);
-      $name = $_POST['name'];
-      $name = filter_var($name, FILTER_SANITIZE_STRING);
-      $price = $_POST['price'];
-      $price = filter_var($price, FILTER_SANITIZE_STRING);
-      $image = $_POST['image'];
-      $image = filter_var($image, FILTER_SANITIZE_STRING);
-      $qty = $_POST['qty'];
-      $qty = filter_var($qty, FILTER_SANITIZE_STRING);
-
-      $check_cart_numbers = $conn->prepare("SELECT * FROM `cart` WHERE name = ? AND user_id = ?");
-      $check_cart_numbers->execute([$name, $user_id]);
-
-      if($check_cart_numbers->rowCount() > 0){
-         $message[] = 'already added to cart!';
-      }else{
-         $insert_cart = $conn->prepare("INSERT INTO `cart`(user_id, pid, name, price, quantity, image) VALUES(?,?,?,?,?,?)");
-         $insert_cart->execute([$user_id, $pid, $name, $price, $qty, $image]);
-         $message[] = 'added to cart!';
-         
-      }
-
-   }
-
+if(isset($_SESSION['user_id'])){
+   $user_id = $_SESSION['user_id'];
+}else{
+   echo json_encode(['error' => 'User not logged in']);
+   exit;
 }
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $pid = $_POST['pid'];
+    $name = $_POST['name'];
+    $price = $_POST['price'];
+    $image = $_POST['image'];
+    $qty = $_POST['qty'];
+
+    // Check if item already exists in cart using pid and user_id
+    $check_cart = "SELECT COUNT(*) as count FROM cart WHERE pid = ? AND user_id = ?";
+    $params = array($pid, $user_id);
+    $stmt = sqlsrv_query($conn, $check_cart, $params);
+
+    if ($stmt === false) {
+        echo json_encode(['error' => 'Database error: ' . print_r(sqlsrv_errors(), true)]);
+        exit;
+    }
+
+    $row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC);
+    
+    if ($row['count'] > 0) {
+        echo json_encode(['error' => 'Item already exists in cart!']);
+        exit;
+    }
+
+    // If we get here, item is not in cart, so insert it
+    $insert_cart = "INSERT INTO cart (user_id, pid, name, price, quantity, image) 
+                    VALUES (?, ?, ?, ?, ?, ?)";
+    $params = array($user_id, $pid, $name, $price, $qty, $image);
+    $stmt = sqlsrv_query($conn, $insert_cart, $params);
+
+    if ($stmt === false) {
+        echo json_encode(['error' => 'Failed to add to cart: ' . print_r(sqlsrv_errors(), true)]);
+    } else {
+        echo json_encode(['success' => true, 'message' => 'Item added to cart successfully!']);
+    }
+} else {
+    echo json_encode(['error' => 'Invalid request method']);
+}
+
+sqlsrv_close($conn);
 ?>
+

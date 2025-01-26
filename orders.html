@@ -1,18 +1,3 @@
-<!-- <?php
-
-include 'components/connect.php';
-
-session_start();
-
-if(isset($_SESSION['user_id'])){
-   $user_id = $_SESSION['user_id'];
-}else{
-   $user_id = '';
-   header('location:home.html');
-};
-
-?> -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -27,12 +12,12 @@ if(isset($_SESSION['user_id'])){
    <!-- custom css file link  -->
    <link rel="stylesheet" href="css/style.css">
 
+   <!-- jQuery -->
+   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
    
-<!-- header section starts
-<?php include 'components/user_header.php'; ?>
-header section ends -->
+<div id="header"></div>
 
 <div class="heading">
    <h3>orders</h3>
@@ -40,117 +25,79 @@ header section ends -->
 </div>
 
 <section class="orders">
-
    <h1 class="title">your orders</h1>
-
-   <div class="box-container">
-
-   <!-- <?php
-      if($user_id == ''){
-         echo '<p class="empty">please login to see your orders</p>';
-      }else{
-         $select_orders = $conn->prepare("SELECT * FROM `orders` WHERE user_id = ?");
-         $select_orders->execute([$user_id]);
-         if($select_orders->rowCount() > 0){
-            while($fetch_orders = $select_orders->fetch(PDO::FETCH_ASSOC)){
-   ?> -->
-   <div class="box">
-      <p>placed on : <span>
-        <!-- <?= $fetch_orders['placed_on']; ?> -->
-    </span></p>
-      <p>name : <span>
-        <!-- <?= $fetch_orders['name']; ?> -->
-    </span></p>
-      <p>email : <span>
-        <!-- <?= $fetch_orders['email']; ?> -->
-    </span></p>
-      <p>number : <span>
-        <!-- <?= $fetch_orders['number']; ?> -->
-    </span></p>
-      <p>address : <span>
-        <!-- <?= $fetch_orders['address']; ?> -->
-    </span></p>
-      <p>payment method : <span>
-        <!-- <?= $fetch_orders['method']; ?> -->
-    </span></p>
-      <p>your orders : <span>
-        <!-- <?= $fetch_orders['total_products']; ?> -->
-    </span></p>
-      <p>total price : <span>
-        <!-- $<?= $fetch_orders['total_price']; ?>/- -->
-    </span></p>
-      <p> payment status : <span>
-        <!-- style="color:<?php if($fetch_orders['payment_status'] == 'pending'){ echo 'red'; }else{ echo 'green'; }; ?>"" -->
-        <!-- <?= $fetch_orders['payment_status']; ?> -->
-    </span> </p>
+   <div class="box-container" id="orders-container">
+      <!-- Orders will be loaded here -->
    </div>
-   <!-- <?php
-      }
-      }else{
-         echo '<p class="empty">no orders placed yet!</p>';
-      }
-      }
-   ?> -->
-
-   </div>
-
 </section>
 
+<div id="footer"></div>
 
+<script>
+$(document).ready(function() {
+    // Load header
+    $("#header").load("components/user_header.html");
+    
+    // Load footer
+    $("#footer").load("components/footer.html");
+    
+    // Function to format price
+    function formatPrice(price) {
+        return '$' + parseFloat(price).toFixed(2);
+    }
 
+    // Load orders
+    function loadOrders() {
+        $.ajax({
+            url: 'orders_data.php',
+            method: 'GET',
+            dataType: 'json',
+            success: function(response) {
+                const container = $('#orders-container');
+                container.empty();
 
+                if (response.status === 'error' && response.error === 'not_logged_in') {
+                    window.location.href = 'home.html';
+                    return;
+                }
 
+                if (response.status === 'empty') {
+                    container.html('<p class="empty">' + response.message + '</p>');
+                    return;
+                }
 
+                if (response.status === 'success') {
+                    response.orders.forEach(function(order) {
+                        const orderBox = `
+                            <div class="box">
+                                <p>name : <span>${order.name}</span></p>
+                                <p>email : <span>${order.email}</span></p>
+                                <p>number : <span>${order.number}</span></p>
+                                <p>address : <span>${order.address}</span></p>
+                                <p>payment method : <span>${order.method}</span></p>
+                                <p>your orders : <span>${order.total_items}</span></p>
+                                <p>total price : <span>${formatPrice(order.total_price)}</span></p>
+                                <p>payment status : <span>${order.payment_status}</span></p>
+                            </div>
+                        `;
+                        container.append(orderBox);
+                    });
+                } else {
+                    container.html('<p class="empty">Error loading orders. Please try again.</p>');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error:', error);
+                $('#orders-container').html('<p class="empty">Error loading orders. Please try again.</p>');
+            }
+        });
+    }
 
-
-
-
-<!-- footer section starts
-<?php include 'components/footer.php'; ?>
-footer section ends -->
-
-<footer class="footer">
-   <div class="bruh">
-      <div id="button"></div>
-      <div id="container">
-         <div id="cont">
-            <div class="footer_center">
-               <section class="grid">
-                  <div class="box">
-                     <img src="imgs/email-icon.png" alt="">
-                     <h3>our email</h3>
-                     <a>foodieplus@smallbusiness.com</a>
-                  </div>
-                  <div class="box">
-                     <img src="imgs/clock-icon.png" alt="">
-                     <h3>opening hours</h3>
-                     <p>00:07am to 04:30pm</p>
-                  </div>
-                  <div class="box">
-                     <img src="imgs/map-icon.png" alt="">
-                     <h3>our address</h3>
-                     <a href="#">Las Pinas, PH - 1250</a>
-                  </div>
-                  <div class="box">
-                     <img src="imgs/phone-icon.png" alt="">
-                     <h3>our number</h3>
-                     <a href="tel:069-6969-6969">123-456-7890</a>
-                  </div>
-               </section>
-            </div>
-         </div>
-      </div>
-   </div>
-</footer>
-
-
-
-
-
-
-
-<!-- custom js file link  -->
-<script src="js/script.js"></script>
+    // Initial load of orders
+    loadOrders();
+});
+</script>
 
 </body>
 </html>
+

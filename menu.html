@@ -1,171 +1,141 @@
-<!-- <?php
-
-include 'components/connect.php';
-
-session_start();
-
-if(isset($_SESSION['user_id'])){
-   $user_id = $_SESSION['user_id'];
-}else{
-   $user_id = '';
-};
-
-include 'components/add_cart.php';
-
-?> -->
-
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>menu</title>
+   <meta charset="UTF-8">
+   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>menu</title>
 
-    <!-- font awesome cdn link  -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+   <!-- font awesome cdn link  -->
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
 
-    <!-- custom css file link  -->
-    <link rel="stylesheet" href="css/style.css">
+   <!-- custom css file link  -->
+   <link rel="stylesheet" href="css/style.css">
 
+   <!-- jQuery -->
+   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 
 <body>
 
-    <!-- header section starts
-    <?php include 'components/user_header.php'; ?>
-header section ends -->
+   <!-- header section starts -->
+   <div id="user-header"></div>
+   <!-- header section ends -->
 
-    <div class="heading">
-        <h3>our menu</h3>
-        <p><a href="home.html">home</a> <span> / menu</span></p>
-    </div>
+   <div class="heading">
+      <h3>our menu</h3>
+      <p><a href="home.html">home</a> <span> / menu</span></p>
+   </div>
 
-    <!-- menu section starts  -->
+   <!-- menu section starts  -->
 
-    <section class="products">
+   <section class="items">
 
-        <h1 class="title">latest dishes</h1>
+      <h1 class="title">latest dishes</h1>
 
-        <div class="box-container">
+      <div class="box-container" id="menu-items">
+         <!-- Items will be dynamically inserted here -->
+      </div>
 
-            <!-- <?php
-         $select_products = $conn->prepare("SELECT * FROM `products`");
-         $select_products->execute();
-         if($select_products->rowCount() > 0){
-            while($fetch_products = $select_products->fetch(PDO::FETCH_ASSOC)){
-      ?> -->
-            <form action="" method="post" class="box">
-                <input type="hidden" name="pid" value="<?= $fetch_products['id']; ?>">
-                <input type="hidden" name="name" value="<?= $fetch_products['name']; ?>">
-                <input type="hidden" name="price" value="<?= $fetch_products['price']; ?>">
-                <input type="hidden" name="image" value="<?= $fetch_products['image']; ?>">
-                <a href="quick_view.html" class="fas fa-eye">
-                    <!-- href="quick_view.php?pid=<?= $fetch_products['id']; ?>" -->
-                </a>
-                <button type="submit" class="fas fa-shopping-cart" name="add_to_cart"></button>
-                <img src="uploaded_img/<?= $fetch_products['image']; ?>" alt="">
-                <a href="category.html" class="cat">
-                    <!-- href="category.php?category=<?= $fetch_products['category']; ?>" -->
-                    <!-- <?= $fetch_products['category']; ?> -->
-                </a>
-                <div class="name">
-                    <!-- <?= $fetch_products['name']; ?> -->
-                </div>
-                <div class="flex">
-                    <div class="price"><span>$</span>
-                        <!-- <?= $fetch_products['price']; ?> -->
-                    </div>
-                    <input type="number" name="qty" class="qty" min="1" max="99" value="1" maxlength="2"">
-         </div>
-      </form>
-      <!-- <?php
+   </section>
+   <!-- menu section ends -->
+
+
+   <!-- footer section starts -->
+   <div id="footer"></div>
+   <!-- footer section ends -->
+
+
+   <!-- custom js file link  -->
+   <script src="js/script.js"></script>
+
+   <script>
+   $(document).ready(function() {
+      // Load header and footer
+      $("#user-header").load("components/user_header.html");
+      $("#footer").load("components/footer.html");
+
+      function showMessage(message, isError = false) {
+        const messageHtml = `
+            <div class="message ${isError ? 'error' : 'success'}">
+                <span>${message}</span>
+                <i class="fas fa-times" onclick="this.parentElement.remove();"></i>
+            </div>
+        `;
+        $('#message-container').html(messageHtml);
+        
+        setTimeout(() => {
+            $('#message-container .message').fadeOut();
+        }, 5000);
+    }
+
+      // Fetch menu items
+      $.ajax({
+         url: 'menu.php',
+         type: 'GET',
+         dataType: 'json',
+         success: function(data) {
+            let html = '';
+            if (data.length > 0) {
+               data.forEach(function(item) {
+                  html += `
+                     <form action="" method="post" class="box">
+                        <input type="hidden" name="pid" value="${item.id}">
+                        <input type="hidden" name="name" value="${item.name}">
+                        <input type="hidden" name="price" value="${item.price}">
+                        <input type="hidden" name="image" value="${item.image}">
+                        <a href="quick_view.html?pid=${item.id}" class="fas fa-eye"></a>
+                        <button type="submit" class="fas fa-shopping-cart" name="add_to_cart"></button>
+                        <img src="uploaded_img/${item.image}" alt="">
+                        <a href="category.html?category=${item.category}" class="cat">${item.category}</a>
+                        <div class="name">${item.name}</div>
+                        <div class="flex">
+                           <div class="price"><span>$</span>${item.price}</div>
+                           <input type="number" name="qty" class="qty" min="1" max="99" value="1" maxlength="2">
+                        </div>
+                     </form>
+                  `;
+               });
+            } else {
+               html = '<p class="empty">no items added yet!</p>';
             }
-         }else{
-            echo '<p class=" empty">no products added yet!</p>';
-                    }
-                    ?> -->
+            $('#menu-items').html(html);
+         },
+         error: function(xhr, status, error) {
+            console.error("AJAX Error:", {xhr, status, error});
+            $('#menu-items').html('<p class="empty">Error loading menu items. Please try again later.</p>');
+            showMessage('Failed to load menu items: ' + error, true);
+         }
+      });
 
-                </div>
-
-    </section>
-
-
-    <!-- menu section ends -->
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <!-- footer section starts
-<?php include 'components/footer.php'; ?>
-footer section ends -->
-
-<footer class="footer">
-    <div class="bruh">
-       <div id="button"></div>
-       <div id="container">
-          <div id="cont">
-             <div class="footer_center">
-                <section class="grid">
-                   <div class="box">
-                      <img src="imgs/email-icon.png" alt="">
-                      <h3>our email</h3>
-                      <a>foodieplus@smallbusiness.com</a>
-                   </div>
-                   <div class="box">
-                      <img src="imgs/clock-icon.png" alt="">
-                      <h3>opening hours</h3>
-                      <p>00:07am to 04:30pm</p>
-                   </div>
-                   <div class="box">
-                      <img src="imgs/map-icon.png" alt="">
-                      <h3>our address</h3>
-                      <a href="#">Las Pinas, PH - 1250</a>
-                   </div>
-                   <div class="box">
-                      <img src="imgs/phone-icon.png" alt="">
-                      <h3>our number</h3>
-                      <a href="tel:069-6969-6969">123-456-7890</a>
-                   </div>
-                </section>
-             </div>
-          </div>
-       </div>
-    </div>
- </footer>
- 
- 
-
-
-
-
-
-
-
-    <!-- custom js file link  -->
-    <script src="js/script.js"></script>
+      // Handle add to cart
+      $(document).on('submit', '.box', function(e) {
+         e.preventDefault();
+         var formData = $(this).serialize();
+         $.ajax({
+            url: 'components/add_cart.php',
+            type: 'POST',
+            data: formData,
+            dataType: 'json',
+            success: function(response) {
+               if(response.success) {
+                  alert('Item added to cart successfully!');
+                  $("#user-header").load("components/user_header.html");
+               } else {
+                  alert('Error: ' + (response.error || 'Failed to add item to cart'));
+               }
+            },
+            error: function(xhr, status, error) {
+               console.error("Error adding to cart:", error);
+               alert('Error adding item to cart. Please try again.');
+            }
+         });
+      });
+   });
+   </script>
 
 </body>
 
 </html>
+

@@ -1,79 +1,15 @@
-<!-- <?php
-
-include 'components/connect.php';
-
-session_start();
-
-if(isset($_SESSION['user_id'])){
-   $user_id = $_SESSION['user_id'];
-}else{
-   $user_id = '';
-   header('location:home.html');
-};
-
-if(isset($_POST['submit'])){
-
-   $name = $_POST['name'];
-   $name = filter_var($name, FILTER_SANITIZE_STRING);
-   $number = $_POST['number'];
-   $number = filter_var($number, FILTER_SANITIZE_STRING);
-   $email = $_POST['email'];
-   $email = filter_var($email, FILTER_SANITIZE_STRING);
-   $method = $_POST['method'];
-   $method = filter_var($method, FILTER_SANITIZE_STRING);
-   $address = $_POST['address'];
-   $address = filter_var($address, FILTER_SANITIZE_STRING);
-   $total_products = $_POST['total_products'];
-   $total_price = $_POST['total_price'];
-
-   $check_cart = $conn->prepare("SELECT * FROM `cart` WHERE user_id = ?");
-   $check_cart->execute([$user_id]);
-
-   if($check_cart->rowCount() > 0){
-
-      if($address == ''){
-         $message[] = 'please add your address!';
-      }else{
-         
-         $insert_order = $conn->prepare("INSERT INTO `orders`(user_id, name, number, email, method, address, total_products, total_price) VALUES(?,?,?,?,?,?,?,?)");
-         $insert_order->execute([$user_id, $name, $number, $email, $method, $address, $total_products, $total_price]);
-
-         $delete_cart = $conn->prepare("DELETE FROM `cart` WHERE user_id = ?");
-         $delete_cart->execute([$user_id]);
-
-         $message[] = 'order placed successfully!';
-      }
-      
-   }else{
-      $message[] = 'your cart is empty';
-   }
-
-}
-
-?> -->
-
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>checkout</title>
-
-    <!-- font awesome cdn link  -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
-
-    <!-- custom css file link  -->
     <link rel="stylesheet" href="css/style.css">
-
 </head>
-
 <body>
-
-    <!-- header section starts
-<?php include 'components/user_header.php'; ?>
-header section ends -->
+    <div id="header"></div>
 
     <div class="heading">
         <h3>checkout</h3>
@@ -81,66 +17,27 @@ header section ends -->
     </div>
 
     <section class="checkout">
-
         <h1 class="title">order summary</h1>
-
-        <form action="" method="post">
-
+        <form id="checkout-form" onsubmit="return handleSubmit(event)">
             <div class="cart-items">
                 <h3>cart items</h3>
-                <!-- <?php
-         $grand_total = 0;
-         $cart_items[] = '';
-         $select_cart = $conn->prepare("SELECT * FROM `cart` WHERE user_id = ?");
-         $select_cart->execute([$user_id]);
-         if($select_cart->rowCount() > 0){
-            while($fetch_cart = $select_cart->fetch(PDO::FETCH_ASSOC)){
-               $cart_items[] = $fetch_cart['name'].' ('.$fetch_cart['price'].' x '. $fetch_cart['quantity'].') - ';
-               $total_products = implode($cart_items);
-               $grand_total += ($fetch_cart['price'] * $fetch_cart['quantity']);
-      ?> -->
-                <p><span class="name">
-                        <!-- <?= $fetch_cart['name']; ?> -->
-                    </span><span class="price">$
-                        <!-- <?= $fetch_cart['price']; ?> x
-                        <?= $fetch_cart['quantity']; ?> -->
-                    </span></p>
-                <!-- <?php
-            }
-         }else{
-            echo '<p class="empty">your cart is empty!</p>';
-         }
-      ?> -->
-                <p class="grand-total"><span class="name">grand total :</span><span class="price">$
-                        <!-- <?= $grand_total; ?> -->
-                    </span></p>
-                <a href="cart.html" class="btn">veiw cart</a>
+                <div id="cart-items-container"></div>
+                <p class="grand-total"><span class="name">grand total :</span><span class="price" id="grand-total"></span></p>
+                <a href="cart.html" class="btn">view cart</a>
             </div>
 
-            <input type="hidden" name="total_products" value="<?= $total_products; ?>">
-            <input type="hidden" name="total_price" value="<?= $grand_total; ?>" value="">
-            <input type="hidden" name="name" value="<?= $fetch_profile['name'] ?>">
-            <input type="hidden" name="number" value="<?= $fetch_profile['number'] ?>">
-            <input type="hidden" name="email" value="<?= $fetch_profile['email'] ?>">
-            <input type="hidden" name="address" value="<?= $fetch_profile['address'] ?>">
+            <input type="hidden" name="total_items" id="total-items">
+            <input type="hidden" name="total_price" id="total-price">
 
             <div class="user-info">
                 <h3>your info</h3>
-                <p><i class="fas fa-user"></i><span>
-                        <!-- <?= $fetch_profile['name'] ?> -->
-                    </span></p>
-                <p><i class="fas fa-phone"></i><span>
-                        <!-- <?= $fetch_profile['number'] ?> -->
-                    </span></p>
-                <p><i class="fas fa-envelope"></i><span>
-                        <!-- <?= $fetch_profile['email'] ?> -->
-                    </span></p>
-                <a href="update_profile.php" class="btn">update info</a>
+                <p><i class="fas fa-user"></i><span id="user-name"></span></p>
+                <p><i class="fas fa-phone"></i><span id="user-number"></span></p>
+                <p><i class="fas fa-envelope"></i><span id="user-email"></span></p>
+                <a href="update_profile.html" class="btn">update info</a>
                 <h3>delivery address</h3>
-                <p><i class="fas fa-map-marker-alt"></i><span>
-                        <!-- <?php if($fetch_profile['address'] == ''){echo 'please enter your address';}else{echo $fetch_profile['address'];} ?> -->
-                    </span></p>
-                <a href="update_address.php" class="btn">update address</a>
+                <p><i class="fas fa-map-marker-alt"></i><span id="user-address"></span></p>
+                <a href="update_address.html" class="btn">update address</a>
                 <select name="method" class="box" required>
                     <option value="" disabled selected>select payment method --</option>
                     <option value="cash on delivery">cash on delivery</option>
@@ -148,35 +45,132 @@ header section ends -->
                     <option value="paytm">paytm</option>
                     <option value="paypal">paypal</option>
                 </select>
-                <input type="submit" value="place order"
-                    class="btn <?php if($fetch_profile['address'] == ''){echo 'disabled';} ?>"
-                    style="width:100%; background:var(--red); color:var(--white);" name="submit">
+                <input type="submit" value="place order" class="btn" name="submit">
             </div>
-
         </form>
-
     </section>
 
+    <div id="footer"></div>
 
+    <script>
+        // Load checkout data when page loads
+        window.addEventListener('load', function() {
+            fetchCheckoutData();
+        });
 
+        function fetchCheckoutData() {
+            fetch('checkout.php')
+                .then(response => response.json())
+                .then(data => {
+                    displayCartItems(data.cart_items);
+                    displayGrandTotal(data.grand_total);
+                    displayUserInfo(data.user_info);
+                })
+                .catch(error => console.error('Error:', error));
+        }
 
+        function displayCartItems(cartItems) {
+            const container = document.getElementById('cart-items-container');
+            let html = '';
+            let totalItems = 0;
+            
+            cartItems.forEach(item => {
+                html += `<p><span class="name">${item.name}</span><span class="price">$${item.price} x ${item.quantity}</span></p>`;
+                totalItems += parseInt(item.quantity);
+            });
+            
+            container.innerHTML = html;
+            document.getElementById('total-items').value = totalItems;
+        }
 
+        function displayGrandTotal(grandTotal) {
+            document.getElementById('grand-total').textContent = `$${grandTotal}`;
+            document.getElementById('total-price').value = grandTotal;
+        }
 
+        function displayUserInfo(userInfo) {
+            document.getElementById('user-name').textContent = userInfo.name;
+            document.getElementById('user-number').textContent = userInfo.number;
+            document.getElementById('user-email').textContent = userInfo.email;
+            document.getElementById('user-address').textContent = userInfo.address || 'please enter your address';
+        }
 
+        function handleSubmit(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const data = {
+                // Get values from form data
+                method: formData.get('method'),
+                total_items: formData.get('total_items'),
+                total_price: formData.get('total_price'),
+                // Get user info from the spans
+                name: document.getElementById('user-name').textContent,
+                number: document.getElementById('user-number').textContent,
+                email: document.getElementById('user-email').textContent,
+                address: document.getElementById('user-address').textContent
+            };
 
+            // Validate required fields
+            const requiredFields = ['name', 'number', 'email', 'address', 'total_items', 'method'];
+            const missingFields = requiredFields.filter(field => !data[field]);
+            
+            if (missingFields.length > 0) {
+                alert('Please fill in all required fields: ' + missingFields.join(', '));
+                return false;
+            }
 
-    <!-- footer section starts
-<?php include 'components/footer.php'; ?>
-footer section ends -->
+            fetch('checkout.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.text();
+            })
+            .then(text => {
+                try {
+                    return JSON.parse(text);
+                } catch (error) {
+                    console.error('Error parsing JSON:', text);
+                    throw new Error('Invalid JSON response');
+                }
+            })
+            .then(result => {
+                if (result.success) {
+                    alert(result.success);
+                    window.location.href = 'orders.html';
+                } else if (result.error) {
+                    alert(result.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while processing your request. Please try again.');
+            });
 
+            return false;
+        }
 
+        // Load header and footer
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('components/user_header.html')
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('header').innerHTML = data;
+                });
 
-
-
-
-    <!-- custom js file link  -->
-    <script src="js/script.js"></script>
-
+            fetch('components/footer.html')
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('footer').innerHTML = data;
+                });
+        });
+    </script>
 </body>
-
 </html>
+

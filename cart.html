@@ -28,7 +28,7 @@
 
 <!-- shopping cart section starts  -->
 
-<section class="products">
+<section class="items">
 
    <h1 class="title">your cart</h1>
 
@@ -56,7 +56,6 @@
 
 <!-- custom js file link  -->
 <script src="js/script.js"></script>
-
 <script>
 $(document).ready(function() {
     // Load header and footer
@@ -87,7 +86,7 @@ $(document).ready(function() {
                             <input type="number" name="qty" class="qty" min="1" max="99" value="${item.quantity}" maxlength="2" data-id="${item.id}">
                             <button type="button" class="fas fa-edit update-qty" data-id="${item.id}"></button>
                         </div>
-                        <div class="sub-total"> sub total : <span>$${subTotal}/-</span> </div>
+                        <div class="sub-total"> sub total : <span>$${subTotal.toFixed(2)}/-</span> </div>
                     </form>
                     `;
                 });
@@ -96,9 +95,12 @@ $(document).ready(function() {
             }
 
             $('#cart-items').html(html);
-            $('#grand-total').text('$' + grandTotal);
+            $('#grand-total').text('$' + grandTotal.toFixed(2));
             $('#checkout-btn').toggleClass('disabled', grandTotal <= 1);
             $('#delete-all-btn').toggleClass('disabled', grandTotal <= 1);
+        }).fail(function(jqXHR, textStatus, errorThrown) {
+            console.error("Error fetching cart items:", textStatus, errorThrown);
+            $('#cart-items').html('<p class="empty">Error loading cart items. Please try again later.</p>');
         });
     }
 
@@ -111,6 +113,9 @@ $(document).ready(function() {
         if(confirm('delete this item?')) {
             $.post('cart-api.php', {action: 'delete', cart_id: cartId}, function() {
                 loadCartItems();
+            }).fail(function(jqXHR, textStatus, errorThrown) {
+                console.error("Error deleting item:", textStatus, errorThrown);
+                alert("Error deleting item. Please try again.");
             });
         }
     });
@@ -120,7 +125,10 @@ $(document).ready(function() {
         let cartId = $(this).data('id');
         let qty = $(this).siblings('.qty').val();
         $.post('cart-api.php', {action: 'update_qty', cart_id: cartId, qty: qty}, function() {
-            loadCartItems();
+            loadCartItems();            
+        }).fail(function(jqXHR, textStatus, errorThrown) {
+            console.error("Error updating quantity:", textStatus, errorThrown);
+            alert("Error updating quantity. Please try again.");
         });
     });
 
@@ -129,6 +137,9 @@ $(document).ready(function() {
         if(confirm('delete all from cart?')) {
             $.post('cart-api.php', {action: 'delete_all'}, function() {
                 loadCartItems();
+            }).fail(function(jqXHR, textStatus, errorThrown) {
+                console.error("Error deleting all items:", textStatus, errorThrown);
+                alert("Error deleting all items. Please try again.");
             });
         }
     });
