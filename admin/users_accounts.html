@@ -1,28 +1,3 @@
-<?php
-
-include '../components/connect.php';
-
-session_start();
-
-$admin_id = $_SESSION['admin_id'];
-
-if(!isset($admin_id)){
-   header('location:admin_login.php');
-}
-
-if(isset($_GET['delete'])){
-   $delete_id = $_GET['delete'];
-   $delete_users = $conn->prepare("DELETE FROM `users` WHERE id = ?");
-   $delete_users->execute([$delete_id]);
-   $delete_order = $conn->prepare("DELETE FROM `orders` WHERE user_id = ?");
-   $delete_order->execute([$delete_id]);
-   $delete_cart = $conn->prepare("DELETE FROM `cart` WHERE user_id = ?");
-   $delete_cart->execute([$delete_id]);
-   header('location:users_accounts.php');
-}
-
-?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -37,10 +12,11 @@ if(isset($_GET['delete'])){
    <!-- custom css file link  -->
    <link rel="stylesheet" href="../css/admin_style.css">
 
+   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
 
-<?php include '../components/admin_header.php' ?>
+<div id="admin-header"></div>
 
 <!-- user accounts section starts  -->
 
@@ -48,36 +24,79 @@ if(isset($_GET['delete'])){
 
    <h1 class="heading">users account</h1>
 
-   <div class="box-container">
-
-   <?php
-      $select_account = $conn->prepare("SELECT * FROM `users`");
-      $select_account->execute();
-      if($select_account->rowCount() > 0){
-         while($fetch_accounts = $select_account->fetch(PDO::FETCH_ASSOC)){  
-   ?>
-   <div class="box">
-      <p> user id : <span><?= $fetch_accounts['id']; ?></span> </p>
-      <p> username : <span><?= $fetch_accounts['name']; ?></span> </p>
-      <a href="users_accounts.php?delete=<?= $fetch_accounts['id']; ?>" class="delete-btn" onclick="return confirm('delete this account?');">delete</a>
-   </div>
-   <?php
-      }
-   }else{
-      echo '<p class="empty">no accounts available</p>';
-   }
-   ?>
-
+   <div class="box-container" id="accounts-container">
+      <!-- User accounts will be loaded here -->
    </div>
 
 </section>
 
 <!-- user accounts section ends -->
 
-
-
 <!-- custom js file link  -->
 <script src="../js/admin_script.js"></script>
+<script>
+$(document).ready(function() {
+    // Load admin header
+    $("#admin-header").load("../components/admin_header.html");
+
+    // Function to load user accounts
+    function loadAccounts() {
+        $.ajax({
+            url: 'fetch_users.php',
+            type: 'GET',
+            dataType: 'json',
+            success: function(data) {
+                var container = $('#accounts-container');
+                container.empty();
+                if(data.length > 0) {
+                    $.each(data, function(i, account) {
+                        container.append(`
+                            <div class="box">
+                                <p> user id : <span>${account.id}</span> </p>
+                                <p> username : <span>${account.name}</span> </p>
+                                <a href="#" class="delete-btn" data-id="${account.id}">delete</a>
+                            </div>
+                        `);
+                    });
+                } else {
+                    container.append('<p class="empty">no accounts available</p>');
+                }
+            },
+            error: function() {
+                alert('Failed to load user accounts');
+            }
+        });
+    }
+
+    // Load accounts on page load
+    loadAccounts();
+
+    // Handle delete button click
+    $(document).on('click', '.delete-btn', function(e) {
+        e.preventDefault();
+        if(confirm('delete this account?')) {
+            var userId = $(this).data('id');
+            $.ajax({
+                url: 'fetch_users.php',
+                type: 'GET',
+                data: {delete: userId},
+                dataType: 'json',
+                success: function(response) {
+                    if(response.success) {
+                        loadAccounts();
+                    } else {
+                        alert('Failed to delete user');
+                    }
+                },
+                error: function() {
+                    alert('Failed to delete user');
+                }
+            });
+        }
+    });
+});
+</script>
 
 </body>
 </html>
+

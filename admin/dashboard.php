@@ -12,16 +12,25 @@ if(!$admin_id){
 
 $response = [];
 
+// Add debugging
+error_log('Admin ID: ' . $admin_id);
+
 // Fetch admin profile
-$sql = "SELECT name FROM [admin] WHERE id = ?";
+$sql = "SELECT name FROM admin WHERE id = ?";
 $params = array($admin_id);
 $stmt = sqlsrv_query($conn, $sql, $params);
+
 if($stmt === false) {
     $response['error'] = 'Error fetching admin profile: ' . print_r(sqlsrv_errors(), true);
+    error_log('SQL Error: ' . print_r(sqlsrv_errors(), true));
 } else {
     $row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC);
-    $response['admin_name'] = $row['name'];
+    error_log('Admin row data: ' . print_r($row, true));
+    $response['admin_name'] = $row['name'] ?? '';
 }
+
+// Add this right after the admin profile query
+error_log('Admin query result: ' . print_r($row, true));
 
 // Fetch total pendings
 $sql = "SELECT SUM(total_price) AS total_pendings FROM orders WHERE payment_status = 'pending'";

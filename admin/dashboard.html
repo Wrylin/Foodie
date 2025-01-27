@@ -17,18 +17,13 @@
    <h1 class="heading">Dashboard</h1>
    <div class="box-container">
       <div class="box">
-         <h3>Welcome!</h3>
-         <p id="admin-name"></p>
-         <a href="update_profile.html" class="btn">Update Profile</a>
-      </div>
-      <div class="box">
          <h3><span>$</span><span id="total-pendings">0</span><span>/-</span></h3>
          <p>Total Pendings</p>
          <a href="placed_orders.html?status=pending" class="btn">See Orders</a>
       </div>
       <div class="box">
          <h3><span>$</span><span id="total-completes">0</span><span>/-</span></h3>
-         <p>Total Completes</p>
+         <p>Total Completed</p>
          <a href="placed_orders.html?status=completed" class="btn">See Orders</a>
       </div>
       <div class="box">
@@ -68,7 +63,6 @@ $(document).ready(function() {
                 alert(data.error);
                 window.location.href = 'admin_login.html';
             } else {
-                $('#admin-name').text(data.admin_name);
                 $('#total-pendings').text(data.total_pendings);
                 $('#total-completes').text(data.total_completes);
                 $('#numbers-of-orders').text(data.numbers_of_orders);
