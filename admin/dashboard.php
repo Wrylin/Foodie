@@ -13,7 +13,7 @@ if(!$admin_id){
 $response = [];
 
 // Fetch admin profile
-$sql = "SELECT name FROM admin WHERE id = ?";
+$sql = "SELECT name FROM [admin] WHERE id = ?";
 $params = array($admin_id);
 $stmt = sqlsrv_query($conn, $sql, $params);
 if($stmt === false) {
