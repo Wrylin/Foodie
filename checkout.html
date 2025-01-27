@@ -75,7 +75,7 @@
             let totalItems = 0;
             
             cartItems.forEach(item => {
-                html += `<p><span class="name">${item.name}</span><span class="price">$${item.price} x ${item.quantity}</span></p>`;
+                html += `<p><span class="name">${item.name}</span><span class="price">Php ${item.price} x ${item.quantity}</span></p>`;
                 totalItems += parseInt(item.quantity);
             });
             
@@ -84,7 +84,7 @@
         }
 
         function displayGrandTotal(grandTotal) {
-            document.getElementById('grand-total').textContent = `$${grandTotal}`;
+            document.getElementById('grand-total').textContent = `Php ${grandTotal}`;
             document.getElementById('total-price').value = grandTotal;
         }
 
