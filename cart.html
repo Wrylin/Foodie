@@ -82,7 +82,7 @@ $(document).ready(function() {
                         <img src="uploaded_img/${item.image}" alt="">
                         <div class="name">${item.name}</div>
                         <div class="flex">
-                            <div class="price"><span>$</span>${item.price}</div>
+                            <div class="price"><span>Php</span>${item.price}</div>
                             <input type="number" name="qty" class="qty" min="1" max="99" value="${item.quantity}" maxlength="2" data-id="${item.id}">
                             <button type="button" class="fas fa-edit update-qty" data-id="${item.id}"></button>
                         </div>
@@ -95,7 +95,7 @@ $(document).ready(function() {
             }
 
             $('#cart-items').html(html);
-            $('#grand-total').text('$' + grandTotal.toFixed(2));
+            $('#grand-total').text('Php' + grandTotal.toFixed(2));
             $('#checkout-btn').toggleClass('disabled', grandTotal <= 1);
             $('#delete-all-btn').toggleClass('disabled', grandTotal <= 1);
         }).fail(function(jqXHR, textStatus, errorThrown) {

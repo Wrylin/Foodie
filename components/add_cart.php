@@ -34,7 +34,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    // If we get here, item is not in cart, so insert it
     $insert_cart = "INSERT INTO cart (user_id, pid, name, price, quantity, image) 
                     VALUES (?, ?, ?, ?, ?, ?)";
     $params = array($user_id, $pid, $name, $price, $qty, $image);
