@@ -788,6 +788,7 @@ section {
     max-width: 50rem;
     margin:0 auto;
     border:var(--border);
+    border-radius: .5rem;
     padding:2rem;
  }
  
@@ -853,6 +854,7 @@ section {
  .checkout form .user-info .box{
     width: 100%;
     border:var(--border);
+    border-radius: .5rem;
     padding:1.4rem;
     margin-top: 2rem;
     margin-bottom: 1rem;
@@ -895,6 +897,7 @@ section {
 /* OTHERS */
 .form-container form{
     border:var(--border);
+    border-radius: .5rem;
     margin:0 auto;
     max-width: 50rem;
     padding:2rem;
@@ -912,6 +915,7 @@ section {
     margin:.7rem 0;
     width: 100%;
     border:var(--border);
+    border-radius: .5rem;
     padding:1.4rem;
     font-size: 1.8rem;
     color:var(--black);
@@ -968,6 +972,7 @@ section {
     max-width: 40rem;
     padding:2rem;
     border:var(--border);
+    border-radius: .5rem;
     position: relative;
     margin:0 auto;
  }
